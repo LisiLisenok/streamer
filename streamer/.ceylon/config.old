@@ -1,0 +1,10 @@
+
+[defaults]
+encoding=UTF-8
+
+[formattool]
+profile=default
+
+[compiler]
+source=source
+source=.apt_generated
