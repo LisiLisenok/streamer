@@ -293,7 +293,7 @@ class StreamFormatReader()
 	void readObjectSection( IReadBuffer bytes, Integer sectionSize ) {
 		// section with objects - copy to buffer
 		Integer nPos = dataBuffer.position;
-		dataBuffer.position = dataBuffer.size;
+		dataBuffer.flipEnd();
 		// add section type and size
 		VMBuffer support = VMBuffer();
 		support.writeByte( formatDefinitions.objects );
@@ -305,7 +305,7 @@ class StreamFormatReader()
 		bytes.position += sectionSize;
 		dataBuffer.position = nPos;
 		nObjectsRead ++;
-	}	
+	}
 	
 	Type[] restoreTypeSequence( IReadBuffer buffer ) {
 		Integer nTypeArguments = buffer.readInteger();

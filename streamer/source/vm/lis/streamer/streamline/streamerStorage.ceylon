@@ -31,32 +31,31 @@ import ceylon.language.meta {
 by("Lisi")
 class StreamerStorage()
 {
+	Comparison compare<Element>( Element x, Element y )
+		given Element satisfies Comparable<Element>
+			=> x.compare( y );
+	
 	// mudule name -> id
-	shared TreeMap<String, Integer> moduleIDs = TreeMap<String, Integer>(
-		(String x, String y) => x.compare( y ) );
+	shared TreeMap<String, Integer> moduleIDs = TreeMap<String, Integer>( compare<String> );
 	// module id -> name
-	shared TreeMap<Integer, String> moduleNames = TreeMap<Integer, String>(
-		(Integer x, Integer y) => x.compare( y ) );
+	shared TreeMap<Integer, String> moduleNames = TreeMap<Integer, String>( compare<Integer> );
 	
 	// registered streamlines - module ID->streamlineID->streamline
 	shared TreeMap<Integer, IStreamlineGeneral> streamlines = TreeMap<Integer, IStreamlineGeneral>(
-		(Integer x, Integer y) => x.compare( y ) );
+		compare<Integer> );
 	
 	// types for which streamlines are registered
-	shared TreeMap<Integer, Type> streamlineTypes = TreeMap<Integer, Type>(
-		(Integer x, Integer y) => x.compare( y ) );
+	shared TreeMap<Integer, Type> streamlineTypes = TreeMap<Integer, Type>( compare<Integer> );
 	
 	// types for which streamlines are registered, but not returned by getType
-	shared TreeMap<Integer, Type> justStreamlineTypes = TreeMap<Integer, Type>(
-		(Integer x, Integer y) => x.compare( y ) );
+	shared TreeMap<Integer, Type> justStreamlineTypes = TreeMap<Integer, Type>( compare<Integer> );
 
 	// declarationClassName->id map
-	shared TreeMap<String, Integer> declarations = TreeMap<String, Integer>(
-		(String x, String y) => x.compare( y ) );
+	shared TreeMap<String, Integer> declarations = TreeMap<String, Integer>( compare<String> );
 	
 	// id->declaration map
 	shared TreeMap<Integer, Declaration> declarationsID = TreeMap<Integer, Declaration>(
-		(Integer x, Integer y) => x.compare( y ) );
+		compare<Integer> );
 }
 
 "streamer storage - contains modules, streamlines, types, declarations and links between them"

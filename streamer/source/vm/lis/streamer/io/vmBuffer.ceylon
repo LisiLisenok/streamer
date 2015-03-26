@@ -109,19 +109,19 @@ shared class VMBuffer( {Byte*} | ByteBuffer | ByteArray | VMBuffer | Null bytes 
 		assert( nStart >= 0 );
 		Integer count = nCount >= 0 then nCount else outer.size - nStart;
 		variable Integer nPosition = 0;
-		Integer nLimit = nStart + count > outer.size then outer.size else nStart + count;
 
-		shared actual Integer bytesAvailable => nLimit - nPosition - nStart;
-		shared actual Integer size = nLimit - nStart;
+		shared actual Integer size = nStart + count > outer.size then outer.size - nStart else count;
+		shared actual Integer bytesAvailable => size - nPosition;
 		
 		shared actual void flipStart() => nPosition = 0;
-		shared actual void flipEnd() => nPosition = nLimit - nStart;
+		shared actual void flipEnd() => nPosition = size - nStart;
 		
 		shared actual Iterator<Byte> iterator() {
 			object bufferIterator satisfies Iterator<Byte> {
 				variable Integer index = nStart + position;
+				variable Integer nSize = nStart + size;
 				shared actual Byte | Finished next() {
-					if ( index < nLimit ) {
+					if ( index < nSize ) {
 						if ( exists b = buffer.get( index++ ) ) {
 							return b;
 						}
@@ -135,7 +135,7 @@ shared class VMBuffer( {Byte*} | ByteBuffer | ByteArray | VMBuffer | Null bytes 
 		shared actual Integer position => nPosition;
 		assign position {
 			if ( position < 0 ) { nPosition = 0; }
-			else if ( position > nLimit ) { nPosition = nLimit; }
+			else if ( position > count ) { nPosition = count; }
 			else { nPosition = position; }
 		}
 		
@@ -149,10 +149,9 @@ shared class VMBuffer( {Byte*} | ByteBuffer | ByteArray | VMBuffer | Null bytes 
 			position += extract[1];
 			return extract[0];
 		}
-		shared actual IReadBuffer shadow( Integer nStart, Integer nCount ) {
-			return ShadowBuffer( this.nStart + nStart,
+		shared actual IReadBuffer shadow( Integer nStart, Integer nCount )
+			=> ShadowBuffer( this.nStart + nStart,
 				nStart + nCount > this.count then this.count - nStart else nCount );
-		}
 	}
 	
 	shared actual void expand( IReadBuffer bytes ) {

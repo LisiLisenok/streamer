@@ -7,4 +7,4 @@ profile=default
 
 [compiler]
 source=source
-source=.apt_generated
+source=doc

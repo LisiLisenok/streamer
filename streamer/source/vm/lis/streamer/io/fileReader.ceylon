@@ -1,96 +1,145 @@
-import ceylon.io {
+import java.io {
 
-	OpenFile,
-	newOpenFile
+	RandomAccessFile
 }
-import ceylon.io.buffer {
+import java.lang {
 
-	ByteBuffer,
-	newByteBuffer
+	ByteArray
 }
 
-"[[IReadBuffer]] with underlaying [[OpenFile]].
- read bytes are cached with size cacheSize.
- Reads count bytes starting from start position"
-by("Lisi")
-class FileReader( file, Integer cacheSize = 1024, Integer start = 0, Integer count = -1 )
-		satisfies IReadBuffer
-{
-	OpenFile file;
+
+"file cache reader"
+class FileCache( String fileName, Integer cacheSize = 1024 ) {
 	
-	ByteBuffer cache = newByteBuffer( cacheSize );
+	"underlaying file"
+	RandomAccessFile file = RandomAccessFile( fileName, "r" );
+	"position within file"
+	variable Integer filePosition = 0;
 	
-	variable Integer cacheStart = start;
-	file.position = start;
+	"underlaying cache buffer"
+	ByteArray cache = ByteArray( cacheSize, Byte( 0 ) );
+	"begining fo cache buffer relative to file"
+	variable Integer cacheStart = 0;
+	"current position within cache"
+	variable Integer cachePosition = 0;
+	"actual cache size"
+	variable Integer cacheActualSize = 0;
 	
-	Integer limit => count >= 0 && start + count <= file.size then start + count else file.size;
-	shared actual Integer size = limit - start;
-	
-	shared actual Integer bytesAvailable => size - position > 0 then size - position else 0;
-	shared actual Integer position => cacheStart + cache.position - start;
+	"total file size in bytes"
+	shared Integer size => file.length();
+	"available bytes (fromcurrent position and up to the file end)"
+	shared Integer bytesAvailable => size - position > 0 then size - position else 0;
+	"position within file"
+	shared Integer position => filePosition;
 	assign position {
-		if ( position < cacheStart || position >= cacheStart + cacheSize ) {
-			file.position = position;
-			reloadCache();
-		}
-		else {
-			cache.position = position - cacheStart;
-		}
+		if ( position < 0 ) { filePosition = 0; }
+		else if ( position > size ) { filePosition = size; }
+		else { filePosition = position; }
 	}
 	
+	"if queried byte is outside cache - reload cache"
 	void reloadCache() {
-		if ( file.position < cacheStart || file.position >= cacheStart + cacheSize ) {
-			cacheStart = file.position;
-			file.read( cache );
-			cache.position = 0;
+		cacheStart = filePosition;
+		file.seek( filePosition );
+		cacheActualSize = file.read( cache, 0, cacheSize );
+		if ( cacheActualSize < 0 ) {
+			cacheActualSize = file.length() - filePosition;
 		}
-		else {
-			cache.position = file.position - cacheStart;
-		}
+		cachePosition = 0;
 	}
 	
-	shared actual void flipEnd() => position = limit;
-	shared actual void flipStart() => position = 0;
+	shared void flipEnd() => position = size;
+	shared void flipStart() => position = 0;
 	
-	shared actual Iterator<Byte> iterator() {
-		object iter satisfies Iterator<Byte> {
-			ByteBuffer cache = newByteBuffer( cacheSize );
-			cache.limit = cacheSize;
-			variable Integer currentPosition = outer.position;
-			
-			void reloadCache() {
-				if ( currentPosition < file.size ) {
-					Integer nPos = file.position;
-					file.position = currentPosition;
-					cache.limit = file.read( cache );
-					cache.position = 0;
-					currentPosition = file.position + cache.limit;
-					print( "current ``currentPosition``, size ``file.size``, limit ``cache.limit``");
-					file.position = nPos;
-				}
-				else {
-					cache.position = cache.limit;
-				}
-			}
-			
-			shared actual Byte|Finished next() {
-				if ( !cache.hasAvailable ) { reloadCache(); }
-				if ( cache.hasAvailable) { return cache.get(); }
-				else { return finished; }
-			}
-		}
-		return iter;
-	}
-	
-	shared actual Byte readByte() {
-		if ( ! cache.hasAvailable ) {
-			file.position = cache.position + cacheSize; 
+	shared Byte readByte() {
+		if ( filePosition < cacheStart || filePosition >= cacheStart + cacheActualSize ) {
 			reloadCache();
 		}
-		return cache.getByte();
+		Integer n = cachePosition;
+		cachePosition ++;
+		filePosition ++;
+		return cache.get( n );
 	}
+	
+}
+
+"[[IReadBuffer]] reads from file with name fileName.
+ [[RandomAccessFile]] is used to access file.
+ Read bytes are cached with size cacheSize."
+by("Lisi")
+shared class FileReader( String fileName, Integer cacheSize = 1024 )
+		satisfies IReadBuffer
+{	
+	"underlaying file"
+	FileCache file = FileCache( fileName, cacheSize );
+	
+	"shadow buffer representation"
+	class ShadowReader( Integer nStart, Integer nCount ) satisfies IReadBuffer {
+		
+		variable Integer nPosition = 0;
+				
+		Integer count = nCount >= 0 then nCount else file.size - nStart;
+		shared actual void flipEnd() => nPosition = count;
+		shared actual void flipStart() => nPosition = 0;
+		
+		shared actual Integer size = nStart + count > file.size then file.size - nStart else count;
+		shared actual Integer bytesAvailable => size - nPosition;
+
+		shared actual Integer position => nPosition;
+		assign position {
+			if ( position < 0 ) { nPosition = 0; }
+			else if ( position > count ) { nPosition = count; }
+			else { nPosition = position; }
+		}
+		
+		shared actual Byte readByte() {
+			Integer nPos = file.position;
+			file.position = nStart + nPosition;
+			Byte b = file.readByte();
+			file.position = nPos;
+			nPosition ++;
+			return b;
+		}
+		
+		shared actual Iterator<Byte> iterator() {
+			object iter satisfies Iterator<Byte> {
+				variable Integer nPos = position;
+				shared actual Byte|Finished next() {
+					Integer nPosStore = nPosition;
+					nPosition = nPos;
+					if ( bytesAvailable > 0 ) {
+						Byte b = readByte();
+						nPosition = nPosStore;
+						nPos ++;
+						return b;
+					}
+					else { return finished; }
+				}
+			}
+			return iter;
+		}		
+
+		shared actual IReadBuffer shadow( Integer nStart, Integer nCount )
+			=> ShadowReader( this.nStart + nStart,
+				nStart + nCount > this.count then this.count - nStart else nCount );
+	}
+	
+	shared actual Integer size => file.size;
+	
+	shared actual Integer bytesAvailable => file.bytesAvailable;
+	shared actual Integer position => file.position;
+	assign position {
+		file.position = position;
+	}
+	
+	shared actual void flipEnd() => file.flipEnd();
+	shared actual void flipStart() => file.flipStart();
+	
+	shared actual Iterator<Byte> iterator() => ShadowReader( position, bytesAvailable ).iterator();
+	
+	shared actual Byte readByte() => file.readByte();
 	
 	shared actual IReadBuffer shadow( Integer nStart, Integer nCount )
-			=> FileReader( newOpenFile( file.resource ), cacheSize, nStart + this.start, nCount );
+		=> ShadowReader( nStart, nCount );
 	
 }
