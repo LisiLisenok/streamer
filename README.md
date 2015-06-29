@@ -163,7 +163,7 @@ Example:
 ####external streamlines
 external streamlines are registered within streamer using <code>streame.registerStreamline()</code> function.
 Streamlines have to satisfy <code>IStreamline</code> or <code>IStreamlineDeclaration</code> interfaces.
-Each streamline contained in particular module has it own unique id. ID has to be greater 0 and less 256.
+Each streamline contained in particular module has it own unique id. ID has to be greater than 0 and less than 256.
 Streamline id has to be specified at registration using <code>streamer.registerStreamline()</code> function.
  
 Example:
@@ -173,7 +173,7 @@ Example:
 <code>IStreamline</code> is indended to store / restore objects of particular type and contains three methods:
 * <code>IStreamline.write()</code> - objects serialization. Takes instance to be serialized and <code>IOutputStreamline</code> stream, some extension under <code>IOutputStream</code>, which allows to store some raw data about seriazlizing objects and provides access to output stream (<code>IOutputStream</code>) used to store objects with registered streamlines
 * <code>IStreamline.instantiate()</code> - used at deserialization proccess to instantiate an object
-* <code>IStreamline.fill()</code> - fill instantiated object with stored data. Takes <code>IInputStreamline</code> stream and allows restore data stored using IStreamline.write method in the same order it was stored
+* <code>IStreamline.fill()</code> - fill instantiated object with stored data. Takes <code>IInputStreamline</code> stream and allows restore data stored using <code>IStreamline.write()</code> method in the same order it was stored
  
 <code>IStreamlineDeclaration</code> is indended to store / restore objects base on them declaration
 and more suit to store generics. But these streamlines operates by objects of <code>Anything</code> type and
