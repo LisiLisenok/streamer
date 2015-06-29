@@ -44,7 +44,7 @@ This byte buffer can be used to store data in file or sending via network or ano
  
 #buffers
 represents raw bytes stored as sequence and provides read / write operations of bytes or basic types like <code>Integer</code> or <code>Float</code>.
-Interfaces <code>vm.lis.streamer.io::IReadBuffer<code/> and <code>vm.lis.streamer.io::IWriteBuffer</code>
+Interfaces <code>vm.lis.streamer.io::IReadBuffer</code> and <code>vm.lis.streamer.io::IWriteBuffer</code>
 are used within streamer to operate with bytes buffer. Additionaly <code>vm.lis.streamer.io::IExpandedBuffer</code>
 which allows to expand read buffer (or add some bytes to the buffer end) is used to provide bytes transfer and chunk. 
 The buffer interfaces are implemented in[vm.lis.streamer.io::VMBuffer which used within streamer by default.
