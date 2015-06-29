@@ -117,16 +117,15 @@ Example:
     
 * ceylon.collection::ArrayList and ceylon.collection::LinkedList. Union or Intersection types are not supported.
   Restored using default initializer arguments (ceylon.collection::ArrayList.growthFactor = 1.5)
-* IStreamable interface, which delegates serialization / deserialization to the object themself. This doesn't
-  require additional streamlines to be registered. Just implement IStreamable interface.
+* <code>IStreamable</code> interface, which delegates serialization / deserialization to the object themself. This doesn't require additional streamlines to be registered. Just implement <code>IStreamable</code> interface.
   Object type information is stored in the stream, which requires additional bytes. Initializer arguments
   are stored as well. At deserialization the instance will be created automaticaly by this info
-  and stored initializer arguments. Then stream is passed to the IStreamable.restore() method
-  and the instance can restore particular values. To store this values IStreamable.store()
-  method is used during serialization process. Alternatively streamline StreamlineFactory and
-  IStorable interface can be used. This way requires factories to be registered within
-  StreamlineFactory instance for any storing / restoring types. And streamline
-  (StreamlineFactory) registered within the streamer. More classes and instancies required
+  and stored initializer arguments. Then stream is passed to the <code>IStreamable.restore()</code> method
+  and the instance can restore particular values. To store this values <code>IStreamable.store()</code>
+  method is used during serialization process. Alternatively streamline <code>StreamlineFactory</code> and
+  <code>IStorable</code> interface can be used. This way requires factories to be registered within
+  <code>StreamlineFactory</code> instance for any storing / restoring types. And streamline
+  (<code>StreamlineFactory</code>) registered within the streamer. More classes and instancies required
   to follow this way, but it doesn't require type information to be stored within the stream and is more
   flexible to store classes family, see section [external streamlines](#external streamlines) below
    
@@ -189,7 +188,7 @@ In order to implement streamline logic following raw classes can be extended:
 * <code>StreamlineFactory</code> uses factory to create new instance at deserialization. The factory creates instance
   using some default arguments. The instance is responsible to store / restore all data it requires.
   The objects serialized / deserialized by this streamline have to satisfy <code>IStorable</code> interface
-  and implements they own storing logic. This streamline is similar to used with IStreamable objects, 
+  and implements they own storing logic. This streamline is similar to used with <code>IStreamable</code> objects, 
   but it asks factory to create instance instead of storing information about object type. The factories
   must be registered with unique factory id using <code>StreamlineFactory.registerFactory()</code>.
 
