@@ -179,11 +179,11 @@ Example:
 and more suit to store generics. But these streamlines operates by objects of <code>Anything</code> type and
 requires more resources then <code>IStreamline</code> based on object type. Contains the same
 <code>IStreamlineDeclaration.write()</code>, <code>IStreamlineDeclaration.instantiate()</code> and <code>IStreamlineDeclaration.fill()</code>
-methods as IStreamline but uses Anything object type. Absract class <code>StreamlineDeclaration</code> can be used
+methods as <code>IStreamline</code> but uses <code>Anything</code> type. Absract class <code>StreamlineDeclaration</code> can be used
 as a base for streamlines based on declarations.
 
 In order to implement streamline logic following raw classes can be extended:
-* <code>StreamlineString</code> allows to store / restore Strings
+* <code>StreamlineString</code> allows to store / restore <code>Strings</code>
 * <code>StreamlineInitializer</code> allows to store / restore objects that require only initializers data to be stored. It asks initializer arguments at serialization and pass them back to the instance initializer at deserialization
 * <code>StreamlineFactory</code> uses factory to create new instance at deserialization. The factory creates instance
   using some default arguments. The instance is responsible to store / restore all data it requires.
@@ -194,7 +194,7 @@ In order to implement streamline logic following raw classes can be extended:
 
 Example:
 		
-    // to be stored object classes
+    // to be stored classes
     abstract class MyObjectBase() satisfies IStorable {
     }
 		
@@ -206,23 +206,26 @@ Example:
       shared actual void store( IOutputStream stream ) { // storing }
       shared actual void restore( IInputStream stream ) { // restoring }
     }
+    
     // factory classes
     class MyObjectOneFactory() satisfies IFactory<MyObjectBase> {
       shared actual Element createElement() => MyObjectOne(); 
     }
     class MyObjectTwoFactory() satisfies IFactory<MyObjectBase> {
       shared actual Element createElement() => MyObjectTwo(); 
-		}
-		// streamline
-		class MyStreamlineFactory() extends StreamlineFactory<MyObjectBase>();
- 		MyStreamlineFactory streamline = MyStreamlineFactory();
-		streamline.registerFactory( 1, MyObjectOneFactory() );
-		streamline.registerFactory( 2, MyObjectTwoFactory() );
-		streamer.registerStreamline( YYY, MyObjectFactory() );
-		// serializing
-		OutputStream outputStream = OutputStream();
-		outputStream.write( MyObjectOne() );
-		outputStream.write( MyObjectTwo() );
+    }
+    
+    / streamline
+    class MyStreamlineFactory() extends StreamlineFactory<MyObjectBase>();
+    MyStreamlineFactory streamline = MyStreamlineFactory();
+    streamline.registerFactory( 1, MyObjectOneFactory() );
+    streamline.registerFactory( 2, MyObjectTwoFactory() );
+    streamer.registerStreamline( YYY, MyObjectFactory() );
+    
+    // serializing
+    OutputStream outputStream = OutputStream();
+    outputStream.write( MyObjectOne() );
+    outputStream.write( MyObjectTwo() );
 
 #union and intersection types
 not yet supported. At the same time objects of Tuple type are fully supported. 
