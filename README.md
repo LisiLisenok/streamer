@@ -131,8 +131,8 @@ Example:
    
 Example:
 		
-    // class Point to be serialized: satisfies IStreamable interface
-    stream class Point<TypeData>( x, y ) satisfies IStreamable
+    // class Point serialization: satisfies IStreamable interface
+    class Point<TypeData>( x, y ) satisfies IStreamable
       given TypeData of Integer | Float satisfies Numeric<TypeData>
     {
       shared TypeData x;
